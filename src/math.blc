@@ -1,0 +1,26 @@
+module exposes 
+    minFloat64, maxFloat64, absFloat64
+
+function minFloat64(x: float64, y: float64) returns float64
+    if x <= y then
+        return x
+    else
+        return y
+    end
+end
+
+function maxFloat64(x: float64, y: float64) returns float64
+    if x >= y then
+        return x
+    else
+        return y
+    end
+end
+
+function absFloat64(x: float64) returns float64
+    if x < 0.0 then
+        return -x
+    else
+        return x
+    end
+end

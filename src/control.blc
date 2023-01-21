@@ -1,0 +1,70 @@
+import params "params" exposes Limits, manualLimits, standupLimits, cycleTimeSec
+import math "math" exposes minFloat64, maxFloat64, absFloat64
+import control_io "control_io" exposes Sensing, Actuation
+import position "position" exposes Positioning
+import standup "standup" exposes Standup
+import balance "balance" exposes Balancing
+
+struct AutorunEvent
+    var on: bool
+    var present: bool
+end
+
+struct MoveEvent
+    var x_setpoint: float64
+    var present: bool
+end 
+
+struct UIEvent
+    var move: MoveEvent
+    var autorun: AutorunEvent
+end
+
+activity RunManual(pid: nat8, uiCmd: UIEvent, sensors: Sensing)
+                  (limits: Limits, x_setpoint_reached: bool, actuators: Actuation)
+    var x_setpoint = sensors.x_actual
+    cobegin weak
+        repeat
+            await uiCmd.move.present
+            x_setpoint = uiCmd.move.x_setpoint
+        end
+    with weak
+        run Positioning(pid, x_setpoint, sensors)
+                       (limits, x_setpoint_reached, actuators)
+    with 
+        await uiCmd.autorun.present and uiCmd.autorun.on
+    end
+end
+
+
+activity RunAutomatic(pid: nat8, uiCmd: UIEvent, x_setpoint_Reached: bool, sensors: Sensing)(limits: Limits, actuators: Actuation)
+    cobegin weak
+        run Standup(pid)()
+        run Balancing(pid)()
+    with
+        await uiCmd.autorun.present and not uiCmd.autorun.on
+    end
+end
+
+@[EntryPoint]
+activity Control(pid: nat8, machineEnabled: bool, uiCmd: UIEvent, sensors: Sensing)(actuators: Actuation)
+    repeat
+        if not machineEnabled then
+            await machineEnabled
+        end
+        cobegin
+            var limits: Limits = {v_max = 0.0, a_max = 0.0}
+            repeat // toggle between manual and autorun mode
+                var x_setpoint_reached = false
+                limits.v_max = manualLimits[pid].v_max
+                limits.a_max = manualLimits[pid].a_max
+                run RunManual(pid, uiCmd, sensors)(limits, x_setpoint_reached, actuators)
+                limits.v_max = standupLimits[pid].v_max
+                limits.a_max = standupLimits[pid].a_max
+                run RunAutomatic(pid, uiCmd, x_setpoint_reached, sensors)(limits, actuators)
+            end
+        with
+            await not machineEnabled 
+        end
+    end
+end

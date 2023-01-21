@@ -1,0 +1,38 @@
+module exposes Balancing
+
+struct Parameters 
+    let m_axis :float64   // [kg]
+    let F_max: float64    // [N]
+    let v_max: float64    // [m/s]
+    let K_x: float64      // Weight of pos
+    let K_v: float64      // Weight of velocity
+    let K_t: float64      // Weight of theta
+    let K_td: float64     // Weight of delta theta
+end
+
+param lsp: [2]Parameters = {
+    [0] = { 
+        m_axis = 2.3,   // [kg]
+        F_max = 800.0,  // [N]
+        // .v_max = 2.0,  global 2.0 is overwritten by 1.0 in pos code
+        v_max = 2.0,  // [m/s]
+        K_x = 89.0,
+        K_v = 97.0,
+        K_t = 361.0,
+        K_td = 40.0
+    },
+    [1] = { 
+        m_axis = 2.3,   // [kg]
+        F_max = 800.0,  // [N]
+        // .v_max = 2.0,  global 2.0 is overwritten by 1.0 in pos code
+        v_max = 2.0,  // [m/s]
+        K_x = 89.0,
+        K_v = 97.0,
+        K_t = 361.0,
+        K_td = 40.0
+    }
+}
+
+activity Balancing(pid: nat8)()
+    await true
+end

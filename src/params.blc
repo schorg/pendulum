@@ -1,0 +1,37 @@
+module exposes
+    cycleTimeMsec, cycleTimeSec,
+    Limits, manualLimits, standupLimits
+
+const cycleTimeMsec: nat32 = 5 // msec
+const cycleTimeSec: float64 = 0.001 * (cycleTimeMsec as float64)
+
+struct Limits 
+    var v_max: float64
+    var a_max: float64
+end
+
+param manualLimits: [2]Limits = {
+    [0] = {   
+        // This should be zero, because it is set to 0.0 at auto mode start
+        v_max = 0.2,  
+        a_max = 0.5,  
+    },
+    [1] = {   
+        // This should be zero, because it is set to 0.0 at auto mode start
+        v_max = 0.2,  
+        a_max = 0.5,  
+    }
+}
+
+param standupLimits: [2]Limits = {
+    [0] = {   
+        // This should be zero, because it is set to 0.0 at auto mode start
+        v_max = 0.2,  
+        a_max = 0.5,  
+    },
+    [1] = {   
+        // This should be zero, because it is set to 0.0 at auto mode start
+        v_max = 0.2,  
+        a_max = 0.5,  
+    }
+}

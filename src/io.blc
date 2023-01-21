@@ -1,0 +1,4 @@
+@[EntryPoint]
+activity IO()()
+    await true
+end
