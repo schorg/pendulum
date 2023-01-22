@@ -2,17 +2,25 @@ import params "params" exposes Limits, manualLimits, standupLimits, cycleTimeSec
 import math "math" exposes minFloat64, maxFloat64, absFloat64
 import control_io "control_io" exposes Sensing, Actuation
 
-module exposes Positioning, positionAtSetpoint
+module exposes Positioning, setpointReached
 
 struct Parameters
     let K_v: float64        // Weight of velocity soll
     let factor: float64     // Factor for velocity soll ??
-    let epsilon_x: float64  // ABS(x_soll - x_ist) < epsilon_x
+    let epsilon_x: float64  // [m],  ABS(x_soll - x_ist) < epsilon_x
 end
 
 param pp: [2]Parameters = {
-    [0] = {K_v = 0.0, factor = 0.0, epsilon_x = 0.0},
-    [1] = {K_v = 0.0, factor = 0.0, epsilon_x = 0.0}
+    [0] = {
+        K_v = 0.03, 
+        factor = 10.0, 
+        epsilon_x = 0.005 
+    },
+    [1] = {
+        K_v = 0.03, 
+        factor = 10.0, 
+        epsilon_x = 0.005 
+    }
 }
 
 function calculateVelocity(pid: nat8, limits: Limits, x_setpoint: float64, 
@@ -32,7 +40,7 @@ function calculateVelocity(pid: nat8, limits: Limits, x_setpoint: float64,
     end
 end
 
-function positionAtSetpoint(pid: nat8, x_setpoint: float64, sensors: Sensing) returns bool
+function setpointReached(pid: nat8, x_setpoint: float64, sensors: Sensing) returns bool
     return absFloat64(x_setpoint - sensors.x_actual) < pp[pid].epsilon_x
 end
 
