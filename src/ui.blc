@@ -1,0 +1,21 @@
+module exposes 
+    AutorunEvent, MoveEvent,
+    MotionStatus
+
+struct AutorunEvent
+    var on: bool
+    var present: bool
+end
+
+struct MoveEvent
+    var x_setpoint: float64
+    var present: bool
+end 
+
+struct MotionStatus
+    var positionReached: bool
+    var standupStarted: bool
+    var standupReady: bool     
+    var standupFailed: bool 
+    var balanceFailed: bool 
+end

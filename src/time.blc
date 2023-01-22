@@ -1,0 +1,48 @@
+import params "params" exposes cycleTimeMsec
+
+module exposes 
+    MSEC, SEC, MIN, HOUR, DAY,
+    TurnOnWithDelay, TurnOffWithDelay
+
+const MSEC: nat32 = 1
+const SEC = 1000 * MSEC
+const MIN = 60 * SEC
+const HOUR = 60 * MIN
+const DAY = 24 * HOUR 
+
+activity TurnOnWithDelay(inSig: bool, delay: nat32)(outSig: bool)
+    var elapsedTime: nat32 = 0 * MSEC
+    var prevSig = false
+    repeat
+        outSig = false
+        if not prevSig and inSig then // first step (rising edge)
+            if elapsedTime >= delay then outSig = true end
+        elseif prevSig and inSig then // further steps, turn on delay
+            if elapsedTime < delay then elapsedTime = elapsedTime + cycleTimeMsec end
+            if elapsedTime >= delay then outSig = true end
+        elseif prevSig and not inSig then // falling edge
+            elapsedTime = 0 * MSEC
+        end
+        prevSig = inSig
+        await true
+    end
+end
+
+
+activity TurnOffWithDelay(inSig: bool, delay: nat32)(outSig: bool)
+    var elapsedTime: nat32 = 0 * MSEC
+    var prevSig = false
+    repeat
+        outSig = true
+        if prevSig and not inSig then // first step (falling edge)
+            if elapsedTime >= delay then outSig = false end
+        elseif not prevSig and not inSig then // further steps, turn off delay
+            if elapsedTime < delay then elapsedTime = elapsedTime + cycleTimeMsec end
+            if elapsedTime >= delay then outSig = false end
+        elseif not prevSig and inSig then // rising edge
+            elapsedTime = 0 * MSEC
+        end
+        prevSig = inSig
+        await true
+    end
+end

@@ -3,36 +3,11 @@ import control_io "control_io" exposes Sensing, Actuation
 import position "position" exposes Positioning
 import standup "standup" exposes Standup
 import balance "balance" exposes LqrSim
-
-struct AutorunEvent
-    var on: bool
-    var present: bool
-end
-
-struct MoveEvent
-    var x_setpoint: float64
-    var present: bool
-end 
-
-struct UIEvent
-    var move: MoveEvent
-    var autorun: AutorunEvent
-end
-
-/* Integers instead of an enum, which is currently not implemented in Blech */
-const positionReached: int32 = 0
-const standupStarted: int32 = 1
-const standupReady: int32 = 2
-const standupFailed: int32 = 3
-const balanceFailed: int32 = 4
-
-struct MotionStatus
-    var status: int32 
-end
+import ui "ui"
 
 
-activity RunManual(pid: nat8, moveCmd: MoveEvent, sensors: Sensing)
-                  (uiStatus: MotionStatus, x_setpoint: float64, actuators: Actuation)
+activity RunManual(pid: nat8, moveCmd: ui.MoveEvent, sensors: Sensing)
+                  (motion: ui.MotionStatus, x_setpoint: float64, actuators: Actuation)
     let limits: Limits = {v_max = manualLimits[pid].v_max, a_max = manualLimits[pid].a_max}
     cobegin
         repeat
@@ -40,22 +15,22 @@ activity RunManual(pid: nat8, moveCmd: MoveEvent, sensors: Sensing)
             x_setpoint = moveCmd.x_setpoint
         end
     with
-        run Positioning(pid, x_setpoint, limits, sensors)(actuators)
+        run Positioning(pid, x_setpoint, limits, sensors)(motion, actuators)
     end
 end
 
 activity RunStandup(pid: nat8, sensors: Sensing)
-                    (uiStatus: MotionStatus, x_setpoint: float64, actuators: Actuation)
+                   (motion: ui.MotionStatus, x_setpoint: float64, actuators: Actuation)
     var limits: Limits = {v_max = standupLimits[pid].v_max, a_max = standupLimits[pid].a_max}
     cobegin
         run Standup(pid)(x_setpoint, limits)
     with
-        run Positioning(pid, x_setpoint, limits, sensors)(actuators)
+        run Positioning(pid, x_setpoint, limits, sensors)(motion, actuators)
     end
 end
 
-activity RunBalancing(pid: nat8, moveCmd: MoveEvent, sensors: Sensing)
-                     (uiStatus: MotionStatus, x_setpoint: float64, actuators: Actuation)
+activity RunBalancing(pid: nat8, moveCmd: ui.MoveEvent, sensors: Sensing)
+                     (motionStatus: ui.MotionStatus, x_setpoint: float64, actuators: Actuation)
     cobegin
         repeat
             await moveCmd.present
@@ -67,9 +42,15 @@ activity RunBalancing(pid: nat8, moveCmd: MoveEvent, sensors: Sensing)
 end
 
 
+
+struct UIEvent
+    var move: ui.MoveEvent
+    var autorun: ui.AutorunEvent
+end
+
 @[EntryPoint]
-activity Control(pid: nat8, machineEnabled: bool, uiCmd: UIEvent, sensors: Sensing)
-                (uiStatus: MotionStatus, actuators: Actuation)
+activity Control(pid: nat8, machineEnabled: bool, cmd: UIEvent, sensors: Sensing)
+                (motion: ui.MotionStatus, actuators: Actuation)
     repeat
         if not machineEnabled then
             await machineEnabled
@@ -77,12 +58,12 @@ activity Control(pid: nat8, machineEnabled: bool, uiCmd: UIEvent, sensors: Sensi
         cobegin weak
             repeat
                 var x_setpoint: float64 = sensors.x_actual
-                when uiCmd.autorun.present and uiCmd.autorun.on abort
-                    run RunManual(pid, uiCmd.move, sensors)(uiStatus, x_setpoint, actuators)
+                when cmd.autorun.present and cmd.autorun.on abort
+                    run RunManual(pid, cmd.move, sensors)(motion, x_setpoint, actuators)
                 end
-                when uiCmd.autorun.present and not uiCmd.autorun.on abort
-                    run RunStandup(pid, sensors)(uiStatus, x_setpoint, actuators)
-                    run RunBalancing(pid, uiCmd.move, sensors)(uiStatus, x_setpoint, actuators)
+                when cmd.autorun.present and not cmd.autorun.on abort
+                    run RunStandup(pid, sensors)(motion, x_setpoint, actuators)
+                    run RunBalancing(pid, cmd.move, sensors)(motion, x_setpoint, actuators)
                 end
             end
         with
