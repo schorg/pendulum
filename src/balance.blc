@@ -1,4 +1,6 @@
-module exposes Balancing
+import control_io "control_io" exposes Sensing, Actuation
+
+module exposes LqrSim
 
 struct Parameters 
     let m_axis :float64   // [kg]
@@ -33,6 +35,6 @@ param lsp: [2]Parameters = {
     }
 }
 
-activity Balancing(pid: nat8)()
+activity LqrSim(pid: nat8, x_setpoint: float64, sensors: Sensing)(actuators: Actuation)
     await true
 end

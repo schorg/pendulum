@@ -1,3 +1,5 @@
+import params "params" exposes Limits
+
 module exposes Standup
 
 
@@ -59,6 +61,6 @@ param moves: [2][11]Moves = {
 }
 
 
-activity Standup(pid: nat8)()
+activity Standup(pid: nat8)(x_setpoint: float64, limits: Limits)
     await true
 end

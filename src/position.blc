@@ -2,7 +2,7 @@ import params "params" exposes Limits, manualLimits, standupLimits, cycleTimeSec
 import math "math" exposes minFloat64, maxFloat64, absFloat64
 import control_io "control_io" exposes Sensing, Actuation
 
-module exposes Positioning
+module exposes Positioning, positionAtSetpoint
 
 struct Parameters
     let K_v: float64        // Weight of velocity soll
@@ -15,7 +15,7 @@ param pp: [2]Parameters = {
     [1] = {K_v = 0.0, factor = 0.0, epsilon_x = 0.0}
 }
 
-function calculuateVelocitySetpoint(pid: nat8, limits: Limits, x_setpoint: float64, 
+function calculateVelocity(pid: nat8, limits: Limits, x_setpoint: float64, 
                                     sensors: Sensing, actuators: Actuation) returns float64
     var v_setpoint: float64 // this is just a test
 
@@ -25,24 +25,22 @@ function calculuateVelocitySetpoint(pid: nat8, limits: Limits, x_setpoint: float
     v_setpoint = math.maxFloat64(-limits.v_max, v_setpoint)
 
     let v_limit = absFloat64(actuators.v_setpoint) + limits.a_max * cycleTimeSec
-    if (v_setpoint > 0) then
+    if (v_setpoint >= 0) then
         return minFloat64(v_setpoint, v_limit)
-    else
+    else 
         return maxFloat64(v_setpoint, -v_limit)
     end
 end
 
-function positionReached(pid: nat8, x_setpoint: float64, sensors: Sensing) returns bool
+function positionAtSetpoint(pid: nat8, x_setpoint: float64, sensors: Sensing) returns bool
     return absFloat64(x_setpoint - sensors.x_actual) < pp[pid].epsilon_x
 end
 
-activity Positioning(pid: nat8, x_setpoint: float64, sensors: Sensing)
-                    (limits: Limits, x_setpoint_reached: bool, actuators: Actuation)
+activity Positioning(pid: nat8, x_setpoint: float64, limits: Limits, sensors: Sensing)
+                    (actuators: Actuation)
     repeat
         actuators.v_setpoint = 
-            calculuateVelocitySetpoint(pid, limits, x_setpoint, sensors, actuators)
-        x_setpoint_reached =
-            positionReached(pid, x_setpoint, sensors)
+            calculateVelocity(pid, limits, x_setpoint, sensors, actuators)
         await true
     end
 end
