@@ -1,6 +1,6 @@
 import params "params" exposes Limits, manualLimits, standupLimits, cycleTimeSec
 import math "math" exposes minFloat64, maxFloat64, absFloat64
-import control_io "control_io" exposes Sensing, Actuation
+import dataflow "dataflow" exposes Sensing, Actuation
 import ui "ui"
 
 module exposes Positioning, x_setpointReached
@@ -50,7 +50,7 @@ activity Positioning(pid: nat8, x_setpoint: float64, limits: Limits, sensors: Se
     repeat
         actuators.v_setpoint = 
             calculateVelocity(pid, limits, x_setpoint, sensors, actuators)
-        motion.positionReached =
+        motion.pendulumOk =
             x_setpointReached(pid, x_setpoint, sensors)
         await true
     end

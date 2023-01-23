@@ -1,0 +1,31 @@
+module exposes
+    MachineInput, MachineOutput,
+    DriveInput, DriveOutput
+
+struct MachineInput
+    var fuse1ok: bool
+    var fuse2ok: bool
+    var fuse4ok: bool
+    var pnozControlOn: bool
+    var pnozEmergencyStop: bool
+    var pnozDoorClosed: bool
+end
+
+struct MachineOutput
+    var powerOn: bool
+    var lightOn: bool
+    var plcOk: bool
+end
+
+struct DriveInput
+    var analog: int16
+    var status: bits16
+    var position: int32
+end
+
+struct DriveOutput
+    var control: bits16
+    var v_setpoint: int32
+end
+
+

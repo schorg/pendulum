@@ -1,5 +1,5 @@
 import params "params" exposes Limits, manualLimits, standupLimits
-import control_io "control_io" exposes Sensing, Actuation
+import dataflow "dataflow" exposes Sensing, Actuation
 import position "position" exposes Positioning
 import standup "standup" exposes Standup
 import balance "balance" exposes LqrSim

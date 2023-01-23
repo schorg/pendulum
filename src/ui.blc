@@ -1,6 +1,27 @@
 module exposes 
-    AutorunEvent, MoveEvent,
-    MotionStatus
+    MachineStatus,       
+    EnableEvent, PendulumStatus, 
+    AutorunEvent, MoveEvent, MotionStatus
+
+
+// These use the same names as the pendulum UI
+// The order is identical to the C definition, which allows for a cast
+
+struct MachineStatus
+    var emergencyStop: bool
+    var doorOpen: bool
+    var control: bool
+end
+
+struct EnableEvent
+    var on: bool
+    var present: bool
+end
+
+struct PendulumStatus
+    var driveEnabled: bool
+    var driveError: bool
+end
 
 struct AutorunEvent
     var on: bool
@@ -13,8 +34,8 @@ struct MoveEvent
 end 
 
 struct MotionStatus
-    var positionReached: bool
-    var standupStarted: bool
+    var autoStarted: bool  // 
+    var pendulumOk: bool
     var standupReady: bool     
     var standupFailed: bool 
     var balanceFailed: bool 

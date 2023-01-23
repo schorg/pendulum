@@ -1,4 +1,4 @@
-import control_io "control_io" exposes Sensing, Actuation
+import dataflow "dataflow" exposes Sensing, Actuation
 
 module exposes LqrSim
 
