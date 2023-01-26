@@ -1,14 +1,18 @@
-import params "params" exposes cycleTimeMsec
-
 module exposes 
     MSEC, SEC, MIN, HOUR, DAY,
+    cycleTimeMsec, cycleTimeSec,
     TurnOnWithDelay, TurnOffWithDelay
+
 
 const MSEC: nat32 = 1
 const SEC = 1000 * MSEC
 const MIN = 60 * SEC
 const HOUR = 60 * MIN
 const DAY = 24 * HOUR 
+
+const cycleTimeMsec: nat32 = 5 * MSEC
+const cycleTimeSec: float64 = 0.001 * (cycleTimeMsec as float64)
+
 
 activity TurnOnWithDelay(inSig: bool, delay: nat32)(outSig: bool)
     var elapsedTime: nat32 = 0 * MSEC

@@ -1,63 +1,9 @@
-import params "params" exposes Limits
+import params "params"
 import time "time" exposes MSEC
 
 module exposes Standup
 
 
-struct Moves
-    let pos: float64           // [m] position
-    let vel: float64           // [m/s] velocity
-    let acc: float64           // [m/s²] acceleration
-    let time: nat32           // duration
-end
-
-
-
-const V_MAX_ALL: float64 = 0.4
-const A_MAX_ALL: float64 = 2.0
-
-const DUR_0: nat32 = 100 * MSEC
-const DUR_1: nat32 = DUR_0 + 450 * MSEC
-const DUR_2: nat32 = DUR_1 + 550 * MSEC
-const DUR_3: nat32 = DUR_2 + 550 * MSEC
-const DUR_4: nat32 = DUR_3 + 550 * MSEC
-const DUR_5: nat32 = DUR_4 + 550 * MSEC
-const DUR_6: nat32 = DUR_5 + 820 * MSEC
-const DUR_7: nat32 = DUR_6 + 810 * MSEC
-const DUR_8: nat32 = DUR_7 + 500 * MSEC
-const DUR_9: nat32 = DUR_8 + 500 * MSEC
-const DUR_10: nat32 = DUR_9 + 200 * MSEC
-
-param moves: [2][11]Moves = {
-    [0] = {
-        [0] = {pos = 0.08, vel = 0.1, acc = A_MAX_ALL, time = DUR_0},
-        [1] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_1},
-        [2] = {pos = 0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_2},
-        [3] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_3},
-        [4] = {pos = 0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_4},
-        [5] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_5},
-        [6] = {pos = 0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_6},
-        [7] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_7},
-        [8] = {pos = -0.01, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_2},
-        [9] = {pos = 0.0, vel = 0.0, acc = A_MAX_ALL, time = DUR_9},
-        [10] = {pos = 0.0, vel = 0.0, acc = A_MAX_ALL, time = DUR_10},
-    },
-    [1] = {
-        [0] = {pos = 0.08, vel = 0.1, acc = A_MAX_ALL, time = DUR_0},
-        [1] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_1},
-        [2] = {pos = 0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_2},
-        [3] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_3},
-        [4] = {pos = 0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_4},
-        [5] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_5},
-        [6] = {pos = 0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_6},
-        [7] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_7},
-        [8] = {pos = -0.01, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_2},
-        [9] = {pos = 0.0, vel = 0.0, acc = A_MAX_ALL, time = DUR_9},
-        [10] = {pos = 0.0, vel = 0.0, acc = A_MAX_ALL, time = DUR_10},
-    }
-}
-
-
-activity Standup(pid: nat8)(x_setpoint: float64, limits: Limits)
+activity Standup()(x_setpoint: float64, limit: params.Limit)
     await true
 end

@@ -1,35 +1,35 @@
-import params "params" exposes Limits, manualLimits, standupLimits
-import dataflow "dataflow" exposes Sensing, Actuation
+import params "params"
+import flow "flow" exposes Sensing, Actuation
 import position "position" exposes Positioning
 import standup "standup" exposes Standup
 import balance "balance" exposes LqrSim
 import ui "ui"
 
 
-activity RunManual(pid: nat8, moveCmd: ui.MoveEvent, sensors: Sensing)
+activity RunManual(pp: params.Position, manualLimit: params.Limit,
+                   moveCmd: ui.MoveEvent, sensors: Sensing)
                   (motion: ui.MotionStatus, x_setpoint: float64, actuators: Actuation)
-    let limits: Limits = {v_max = manualLimits[pid].v_max, a_max = manualLimits[pid].a_max}
     cobegin
         repeat
             await moveCmd.present
             x_setpoint = moveCmd.x_setpoint
         end
     with
-        run Positioning(pid, x_setpoint, limits, sensors)(motion, actuators)
+        run Positioning(pp, manualLimit, x_setpoint, sensors)(motion, actuators)
     end
 end
 
-activity RunStandup(pid: nat8, sensors: Sensing)
+activity RunStandup(pp: params.Position, standupLimit: params.Limit, sensors: Sensing)
                    (motion: ui.MotionStatus, x_setpoint: float64, actuators: Actuation)
-    var limits: Limits = {v_max = standupLimits[pid].v_max, a_max = standupLimits[pid].a_max}
+    var limit: params.Limit = {v_max = standupLimit.v_max, a_max = standupLimit.a_max}
     cobegin
-        run Standup(pid)(x_setpoint, limits)
+        run Standup()(x_setpoint, limit)
     with
-        run Positioning(pid, x_setpoint, limits, sensors)(motion, actuators)
+        run Positioning(pp, standupLimit, x_setpoint, sensors)(motion, actuators)
     end
 end
 
-activity RunBalancing(pid: nat8, moveCmd: ui.MoveEvent, sensors: Sensing)
+activity RunBalancing(moveCmd: ui.MoveEvent, sensors: Sensing)
                      (motionStatus: ui.MotionStatus, x_setpoint: float64, actuators: Actuation)
     cobegin
         repeat
@@ -37,7 +37,7 @@ activity RunBalancing(pid: nat8, moveCmd: ui.MoveEvent, sensors: Sensing)
             x_setpoint = moveCmd.x_setpoint
         end
     with
-        run LqrSim(pid, x_setpoint, sensors)(actuators)
+        run LqrSim(x_setpoint, sensors)(actuators)
     end
 end
 
@@ -49,8 +49,9 @@ struct UIEvent
 end
 
 @[EntryPoint]
-activity Control(pid: nat8, machineEnabled: bool, cmd: UIEvent, sensors: Sensing)
-                (motion: ui.MotionStatus, actuators: Actuation)
+activity Control(pc: params.Control, 
+                 machineEnabled: bool, cmd: UIEvent, sensors: flow.Sensing)
+                (motion: ui.MotionStatus, actuators: flow.Actuation)
     repeat
         if not machineEnabled then
             await machineEnabled
@@ -59,11 +60,11 @@ activity Control(pid: nat8, machineEnabled: bool, cmd: UIEvent, sensors: Sensing
             repeat
                 var x_setpoint: float64 = sensors.x_actual
                 when cmd.autorun.present and cmd.autorun.on abort
-                    run RunManual(pid, cmd.move, sensors)(motion, x_setpoint, actuators)
+                    run RunManual(pc.position, pc.manualLimit, cmd.move, sensors)(motion, x_setpoint, actuators)
                 end
                 when cmd.autorun.present and not cmd.autorun.on abort
-                    run RunStandup(pid, sensors)(motion, x_setpoint, actuators)
-                    run RunBalancing(pid, cmd.move, sensors)(motion, x_setpoint, actuators)
+                    run RunStandup(pc.position, pc.standupLimit, sensors)(motion, x_setpoint, actuators)
+                    run RunBalancing(cmd.move, sensors)(motion, x_setpoint, actuators)
                 end
             end
         with
