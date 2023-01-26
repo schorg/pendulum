@@ -1,16 +1,16 @@
 import time "time" exposes MSEC
 
 module exposes
-    IO, io,
-    Control, control,
-    Limit, manualLimit, standupLimit,
-    Position, position,
-    Moves, moves,
-    Balance, balance,
+    Io, p1Io, p2Io,
+    Control, // p1Control, p2Control,
+    Limit, p1ManualLimit, p1StandupLimit, p2ManualLimit, p2StandupLimit,
+    Position, p1Position, p2Position,
+    Moves, p1Moves, p2Moves,
+    Balance, p1Balance, p2Balance,
     V_MAX_ALL, A_MAX_ALL,
     DUR_0, DUR_1, DUR_2, DUR_3, DUR_4, DUR_5, DUR_6, DUR_7, DUR_8, DUR_9, DUR_10
 
-struct IO
+struct Io
     let offsPend: int16             // offset pendulum
     let theta_gl: float64           // Glättung
     let theta_gl2: float64          // Glättung
@@ -22,8 +22,7 @@ struct IO
     let theta_d_0_epsilon: float64 
 end
 
-param io: [2]IO = {
-    [0] = {
+param p1Io: Io = {
         offsPend = 21757,  // calibrated
         theta_gl = 0.1,
         theta_gl2 = 0.01,
@@ -33,8 +32,9 @@ param io: [2]IO = {
         theta_180_epsilon = 0.235,
         theta_d_0_delay = 100 * MSEC,
         theta_d_0_epsilon = 0.03
-    },
-    [1] = {
+    }
+
+param p2Io: Io = {
         offsPend = 19845,  // calibrated different to p1
         theta_gl = 0.1,
         theta_gl2 = 0.01,
@@ -45,7 +45,7 @@ param io: [2]IO = {
         theta_d_0_delay = 100 * MSEC,
         theta_d_0_epsilon = 0.03  
     }
-}
+
 
 /* Control parameters */
 
@@ -54,31 +54,30 @@ struct Limit
     var a_max: float64
 end
 
-param manualLimit: [2]Limit = {
-    [0] = {   
-        // This should be zero, because it is set to 0.0 at auto mode start
-        v_max = 0.2,  
-        a_max = 0.5,  
-    },
-    [1] = {   
+param p1ManualLimit: Limit = { 
         // This should be zero, because it is set to 0.0 at auto mode start
         v_max = 0.2,  
         a_max = 0.5,  
     }
+
+param p2ManualLimit: Limit = {   
+    // This should be zero, because it is set to 0.0 at auto mode start
+    v_max = 0.2,  
+    a_max = 0.5,  
 }
 
-param standupLimit: [2]Limit = {
-    [0] = {   
-        // This should be zero, because it is set to 0.0 at auto mode start
-        v_max = 0.2,  
-        a_max = 0.5,  
-    },
-    [1] = {   
+
+param p1StandupLimit: Limit = {
         // This should be zero, because it is set to 0.0 at auto mode start
         v_max = 0.2,  
         a_max = 0.5,  
     }
-}
+
+param p2StandupLimit: Limit = {   
+        // This should be zero, because it is set to 0.0 at auto mode start
+        v_max = 0.2,  
+        a_max = 0.5,  
+    }
 
 struct Balance 
     let m_axis :float64   // [kg]
@@ -90,28 +89,28 @@ struct Balance
     let K_td: float64     // Weight of delta theta
 end
 
-param balance: [2]Balance = {
-    [0] = { 
-        m_axis = 2.3,   // [kg]
-        F_max = 800.0,  // [N]
-        // .v_max = 2.0,  global 2.0 is overwritten by 1.0 in pos code
-        v_max = 2.0,  // [m/s]
-        K_x = 89.0,
-        K_v = 97.0,
-        K_t = 361.0,
-        K_td = 40.0
-    },
-    [1] = { 
-        m_axis = 2.3,   // [kg]
-        F_max = 800.0,  // [N]
-        // .v_max = 2.0,  global 2.0 is overwritten by 1.0 in pos code
-        v_max = 2.0,  // [m/s]
-        K_x = 89.0,
-        K_v = 97.0,
-        K_t = 361.0,
-        K_td = 40.0
-    }
+param p1Balance: Balance = {
+    m_axis = 2.3,   // [kg]
+    F_max = 800.0,  // [N]
+    // .v_max = 2.0,  global 2.0 is overwritten by 1.0 in pos code
+    v_max = 2.0,  // [m/s]
+    K_x = 89.0,
+    K_v = 97.0,
+    K_t = 361.0,
+    K_td = 40.0
 }
+
+param p2Balance: Balance = { 
+    m_axis = 2.3,   // [kg]
+    F_max = 800.0,  // [N]
+    // .v_max = 2.0,  global 2.0 is overwritten by 1.0 in pos code
+    v_max = 2.0,  // [m/s]
+    K_x = 89.0,
+    K_v = 97.0,
+    K_t = 361.0,
+    K_td = 40.0
+}
+
 
 struct Position
     let K_v: float64        // Weight of velocity soll
@@ -119,18 +118,18 @@ struct Position
     let epsilon_x: float64  // [m],  ABS(x_soll - x_ist) < epsilon_x
 end
 
-param position: [2]Position = {
-    [0] = {
-        K_v = 0.03, 
-        factor = 10.0, 
-        epsilon_x = 0.005 
-    },
-    [1] = {
-        K_v = 0.03, 
-        factor = 10.0, 
-        epsilon_x = 0.005 
-    }
+const p1Position: Position = {
+    K_v = 0.03, 
+    factor = 10.0, 
+    epsilon_x = 0.005 
 }
+    
+const p2Position: Position = {
+    K_v = 0.03, 
+    factor = 10.0, 
+    epsilon_x = 0.005 
+}
+
 
 struct Moves
     let pos: float64           // [m] position
@@ -154,34 +153,34 @@ const DUR_8: nat32 = DUR_7 + 500 * MSEC
 const DUR_9: nat32 = DUR_8 + 500 * MSEC
 const DUR_10: nat32 = DUR_9 + 200 * MSEC
 
-param moves: [2][11]Moves = {
-    [0] = {
-        [0] = {pos = 0.08, vel = 0.1, acc = A_MAX_ALL, time = DUR_0},
-        [1] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_1},
-        [2] = {pos = 0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_2},
-        [3] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_3},
-        [4] = {pos = 0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_4},
-        [5] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_5},
-        [6] = {pos = 0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_6},
-        [7] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_7},
-        [8] = {pos = -0.01, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_2},
-        [9] = {pos = 0.0, vel = 0.0, acc = A_MAX_ALL, time = DUR_9},
-        [10] = {pos = 0.0, vel = 0.0, acc = A_MAX_ALL, time = DUR_10},
-    },
-    [1] = {
-        [0] = {pos = 0.08, vel = 0.1, acc = A_MAX_ALL, time = DUR_0},
-        [1] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_1},
-        [2] = {pos = 0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_2},
-        [3] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_3},
-        [4] = {pos = 0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_4},
-        [5] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_5},
-        [6] = {pos = 0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_6},
-        [7] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_7},
-        [8] = {pos = -0.01, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_2},
-        [9] = {pos = 0.0, vel = 0.0, acc = A_MAX_ALL, time = DUR_9},
-        [10] = {pos = 0.0, vel = 0.0, acc = A_MAX_ALL, time = DUR_10},
-    }
+param p1Moves: [11]Moves = {
+    [0] = {pos = 0.08, vel = 0.1, acc = A_MAX_ALL, time = DUR_0},
+    [1] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_1},
+    [2] = {pos = 0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_2},
+    [3] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_3},
+    [4] = {pos = 0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_4},
+    [5] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_5},
+    [6] = {pos = 0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_6},
+    [7] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_7},
+    [8] = {pos = -0.01, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_2},
+    [9] = {pos = 0.0, vel = 0.0, acc = A_MAX_ALL, time = DUR_9},
+    [10] = {pos = 0.0, vel = 0.0, acc = A_MAX_ALL, time = DUR_10},
 }
+
+param p2Moves: [11]Moves = {
+    [0] = {pos = 0.08, vel = 0.1, acc = A_MAX_ALL, time = DUR_0},
+    [1] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_1},
+    [2] = {pos = 0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_2},
+    [3] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_3},
+    [4] = {pos = 0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_4},
+    [5] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_5},
+    [6] = {pos = 0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_6},
+    [7] = {pos = -0.08, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_7},
+    [8] = {pos = -0.01, vel = V_MAX_ALL, acc = A_MAX_ALL, time = DUR_2},
+    [9] = {pos = 0.0, vel = 0.0, acc = A_MAX_ALL, time = DUR_9},
+    [10] = {pos = 0.0, vel = 0.0, acc = A_MAX_ALL, time = DUR_10},
+}
+
 
 struct Control
     let position: Position
@@ -191,19 +190,20 @@ struct Control
     let balance: Balance
 end
 
-param control: [2]Control = {
-    [0] = {
-        position = position[0],
-        manualLimit = manualLimit[0],
-        standupLimit = standupLimit[0],
-        moves = moves[0],
-        balance = balance[0]
-    },
-    [1] = {
-        position = position[1],
-        manualLimit = manualLimit[1],
-        standupLimit = standupLimit[1],
-        moves = moves[1],
-        balance = balance[1]
-    }
+
+// Todo: Make struct values const, what to do with moves?
+param p1Control: Control = {
+    position = p1Position,
+    // manualLimit = p1ManualLimit,
+    // standupLimit = p1StandupLimit,
+    // moves = p1Moves,
+    // balance = p1Balance
 }
+
+// param p2Control: Control = {
+//     position = p2Position,
+//     manualLimit = p2ManualLimit,
+//     standupLimit = p2StandupLimit,
+//     // moves = p2Moves,
+//     balance = p2Balance,
+// }
