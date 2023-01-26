@@ -5,6 +5,8 @@ struct Sensing
     var v_actual: float64
     var theta_actual: float64
     var theta_d_actual: float64
+    var is_theta_180: bool
+    var is_theta_d_0: bool
 end
 
 struct Actuation
