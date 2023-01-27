@@ -1,9 +1,10 @@
 import params "params"
-import time "time" exposes MSEC
+import time "time"
+import flow "flow"
 
 module exposes Standup
 
 
-activity Standup()(x_setpoint: float64, limit: params.Limit)
+activity Standup(moves: [11]params.Move)(x_setpoint: float64, varyingLimit: params.Limit)
     await true
 end

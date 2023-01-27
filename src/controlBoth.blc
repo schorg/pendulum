@@ -1,0 +1,21 @@
+import params "params"
+import flow "flow"
+import ui "ui"
+import _ "control" exposes Control
+
+@[EntryPoint]
+activity ControlBoth(moveP1: ui.MoveEvent, autorunP1: ui.AutorunEvent, sensorsP1: flow.Sensing,
+                     moveP2: ui.MoveEvent, autorunP2: ui.AutorunEvent, sensorsP2: flow.Sensing)
+                    (motionP1: ui.MotionStatus, actuatorsP1: flow.Actuation,
+                     motionP2: ui.MotionStatus, actuatorsP2: flow.Actuation)
+
+    let tuneP1: params.Control = params.mkTuneP1()
+    let tuneP2: params.Control = params.mkTuneP2()
+    
+    cobegin
+        run Control(tuneP1, moveP1, autorunP1, sensorsP1)(motionP1, actuatorsP1)
+    with
+        run Control(tuneP2, moveP2, autorunP2, sensorsP2)(motionP2, actuatorsP2)
+    end
+
+end

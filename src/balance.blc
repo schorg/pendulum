@@ -1,7 +1,35 @@
+
+import time "time"
+import params "params"
+import math "math"
 import flow "flow"
 
 module exposes LqrSim
 
-activity LqrSim(x_setpoint: float64, sensors: flow.Sensing)(actuators: flow.Actuation)
-    await true
+function calculateForce(tune: params.Balance, x_setpoint: float64, sensors: flow.Sensing) returns float64
+    
+    var a1 = tune.K_x * (sensors.x_actual - x_setpoint)
+    var a2 = tune.K_v * sensors.v_actual
+    var a3 = tune.K_t * sensors.theta_actual
+    var a4 = tune.K_td * sensors.theta_d_actual
+
+    var force = a1 + a2 - a3 - a4
+    force = math.minFloat64(tune.F_max, force)
+    force = math.maxFloat64(-tune.F_max, force)
+    
+    return force
+end
+
+activity LqrSim(tune: params.Balance, x_setpoint: float64, sensors: flow.Sensing)(actuators: flow.Actuation)
+    actuators.v_setpoint = 0.0
+    repeat
+        let f_setpoint = calculateForce(tune, x_setpoint, sensors)
+        
+        var v_setpoint = actuators.v_setpoint + f_setpoint * (time.cycleTimeSec / tune.m_axis)
+        v_setpoint = math.minFloat64(tune.v_max, v_setpoint)
+        v_setpoint = math.maxFloat64(-tune.v_max, v_setpoint)
+        
+        actuators.v_setpoint = v_setpoint
+        await true
+    end
 end

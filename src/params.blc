@@ -1,15 +1,17 @@
 import time "time" exposes MSEC
 
 module exposes
-    // Io, p1Io, p2Io,
+    Io, p1Io, p2Io,
     Control, //p1Control, p2Control,
     Limit, // p1ManualLimit, p1StandupLimit, p2ManualLimit, p2StandupLimit,
     Position, //, p1Position, p2Position,
-    Move, Moves, // p1Moves, p2Moves,
+    Move, // p1Moves, p2Moves,
     Balance, //, p1Balance, p2Balance,
     // V_MAX_ALL, A_MAX_ALL,
     // DUR_0, DUR_1, DUR_2, DUR_3, DUR_4, DUR_5, DUR_6, DUR_7, DUR_8, DUR_9, DUR_10
-    mkP1Control, mkP2Control
+    mkTuneP1, mkTuneP2
+
+/* Io parameters */
 
 struct Io
     let offsPend: int16             // offset pendulum
@@ -139,11 +141,6 @@ struct Move
     let time: nat32           // duration
 end
 
-struct Moves
-    let m_0: Move
-    let all: [11]Move
-end
-
 const V_MAX_ALL: float64 = 0.4
 const A_MAX_ALL: float64 = 2.0
 
@@ -216,13 +213,13 @@ const p2Control: Control = {
     balance = p2Balance,
 }
 
-function mkP1Control() returns Control
+function mkTuneP1() returns Control
     var pc: Control = p1Control
     pc.moves = p1Moves
     return pc
 end
 
-function mkP2Control() returns Control
+function mkTuneP2() returns Control
     var pc: Control = p2Control
     pc.moves = p2Moves
     return pc

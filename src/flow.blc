@@ -7,6 +7,7 @@ struct Sensing
     var theta_d_actual: float64
     var is_theta_180: bool
     var is_theta_d_0: bool
+    var machineEnabled: bool
 end
 
 struct Actuation

@@ -56,5 +56,6 @@ dkms.conf
 # generated code 
 /src/blech
 
+/ctrlx-apps-main
 
 
