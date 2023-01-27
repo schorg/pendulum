@@ -5,6 +5,7 @@ import standup "standup" exposes Standup
 import balance "balance" exposes LqrSim
 import ui "ui"
 
+// module exposes Control
 
 activity RunManual(pp: params.Position, manualLimit: params.Limit,
                    moveCmd: ui.MoveEvent, sensors: Sensing)
@@ -21,11 +22,11 @@ end
 
 activity RunStandup(pp: params.Position, standupLimit: params.Limit, sensors: Sensing)
                    (motion: ui.MotionStatus, x_setpoint: float64, actuators: Actuation)
-    var limit: params.Limit = {v_max = standupLimit.v_max, a_max = standupLimit.a_max}
+    var varyingLimit: params.Limit = {v_max = standupLimit.v_max, a_max = standupLimit.a_max}
     cobegin
-        run Standup()(x_setpoint, limit)
-    with
-        run Positioning(pp, standupLimit, x_setpoint, sensors)(motion, actuators)
+       run Standup()(x_setpoint, varyingLimit)
+    with weak
+       run Positioning(pp, varyingLimit, x_setpoint, sensors)(motion, actuators)
     end
 end
 
@@ -43,28 +44,34 @@ end
 
 
 
-struct UIEvent
+struct UICommand
     var move: ui.MoveEvent
     var autorun: ui.AutorunEvent
 end
 
+// function mkUIEvent(autorun: ui.AutorunEvent, move: ui.MoveEvent) returns UICommand
+// end
+
+
 @[EntryPoint]
-activity Control(pc: params.Control, 
-                 machineEnabled: bool, cmd: UIEvent, sensors: flow.Sensing)
+activity Control(move: ui.MoveEvent, autorun: ui.AutorunEvent, 
+                 machineEnabled: bool, sensors: flow.Sensing)
                 (motion: ui.MotionStatus, actuators: flow.Actuation)
+    // This is preliminary should become a parameter
+    let pc: params.Control = params.mkP1Control()
     repeat
         if not machineEnabled then
             await machineEnabled
         end
         cobegin weak
             repeat
-                var x_setpoint: float64 = sensors.x_actual
-                when cmd.autorun.present and cmd.autorun.on abort
-                    run RunManual(pc.position, pc.manualLimit, cmd.move, sensors)(motion, x_setpoint, actuators)
+                var x_setpoint = sensors.x_actual
+                when autorun.present and autorun.on abort
+                    run RunManual(pc.position, pc.manualLimit, move, sensors)(motion, x_setpoint, actuators)
                 end
-                when cmd.autorun.present and not cmd.autorun.on abort
+                when autorun.present and not autorun.on abort
                     run RunStandup(pc.position, pc.standupLimit, sensors)(motion, x_setpoint, actuators)
-                    run RunBalancing(cmd.move, sensors)(motion, x_setpoint, actuators)
+                    run RunBalancing(move, sensors)(motion, x_setpoint, actuators)
                 end
             end
         with
