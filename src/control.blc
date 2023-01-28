@@ -1,52 +1,62 @@
 import params "params"
 import flow "flow" exposes Sensing, Actuation
 import position "position" exposes Positioning
+import manual "manual" exposes Manual
 import standup "standup" exposes Standup
 import balance "balance" exposes LqrSim
 import ui "ui"
 
 module exposes Control
 
-activity Moving(tune: params.Position, manualLimit: params.Limit,
-                moveCmd: ui.MoveEvent, sensors: Sensing)
-               (motion: ui.MotionStatus, x_setpoint: float64, actuators: Actuation)
+activity Moving (tune: params.Position, manualLimit: params.Limit,
+                 move: ui.MoveEvent, sensors: Sensing)
+                (motion: ui.MotionStatus, x_setpoint: float64, actuators: Actuation)
+    
+    var atPosition: bool
     cobegin
         repeat
-            await moveCmd.present
-            x_setpoint = moveCmd.x_setpoint
+            await move.present
+            x_setpoint = move.x_setpoint
         end
     with
-        run Positioning(tune, manualLimit, x_setpoint, sensors)(motion, actuators)
+        run Manual(atPosition)(motion)
+    with
+        run Positioning(tune, manualLimit, x_setpoint, sensors)(atPosition, actuators)
     end
 end
 
-activity SwingingUp(tune: params.Position, standupLimit: params.Limit, moves: [11]params.Move, sensors: Sensing)
-                   (motion: ui.MotionStatus, x_setpoint: float64, actuators: Actuation)
+activity SwingingUp (tune: params.Position, 
+                     standupLimit: params.Limit, 
+                     moves: [11]params.Move, 
+                     sensors: Sensing)
+                    (motion: ui.MotionStatus, x_setpoint: float64, actuators: Actuation)
     var varyingLimit: params.Limit = {v_max = standupLimit.v_max, a_max = standupLimit.a_max}
+    var atPosition: bool
     cobegin
-       run Standup(moves)(x_setpoint, varyingLimit)
+       run Standup(moves, prev atPosition, sensors)(motion, x_setpoint, varyingLimit)
     with weak
-       run Positioning(tune, varyingLimit, x_setpoint, sensors)(motion, actuators)
+       run Positioning(tune, varyingLimit, x_setpoint, sensors)(atPosition, actuators)
     end
 end
 
-activity Balancing(tune: params.Balance, moveCmd: ui.MoveEvent, sensors: Sensing)
-                  (motionStatus: ui.MotionStatus, x_setpoint: float64, actuators: Actuation)
+activity Balancing (tune: params.Balance, move: ui.MoveEvent, sensors: Sensing)
+                   (motion: ui.MotionStatus, x_setpoint: float64, actuators: Actuation)
     cobegin
         repeat
-            await moveCmd.present
-            x_setpoint = moveCmd.x_setpoint
+            await move.present
+            x_setpoint = move.x_setpoint
         end
     with
-        run LqrSim(tune, x_setpoint, sensors)(actuators)
+        run LqrSim(tune, x_setpoint, sensors)(motion, actuators)
     end
 end
 
 
-activity Control(tune: params.Control,
-                 move: ui.MoveEvent, autorun: ui.AutorunEvent, 
-                 sensors: flow.Sensing)
-                (motion: ui.MotionStatus, actuators: flow.Actuation)
+activity Control (tune: params.Control,
+                  move: ui.MoveEvent, 
+                  autorun: ui.AutorunEvent, 
+                  sensors: flow.Sensing)
+                 (motion: ui.MotionStatus, actuators: flow.Actuation)
     repeat
         if not sensors.machineEnabled then
             await sensors.machineEnabled

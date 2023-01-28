@@ -138,7 +138,7 @@ struct Move
     let pos: float64           // [m] position
     let vel: float64           // [m/s] velocity
     let acc: float64           // [m/s²] acceleration
-    let time: nat32           // duration
+    let time: nat32            // duration
 end
 
 const V_MAX_ALL: float64 = 0.4

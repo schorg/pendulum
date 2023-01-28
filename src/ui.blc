@@ -34,9 +34,14 @@ struct MoveEvent
 end 
 
 struct MotionStatus
-    var autoStarted: bool  // 
-    var pendulumOk: bool
+    var autoStarted: bool   // 
+    var atPosition: bool     // x_setpoint reached
     var standupReady: bool     
     var standupFailed: bool 
     var balanceFailed: bool 
+end
+
+/* Todo: Integrate this into UI and ports */
+struct MoveStatus
+    var atPosition: bool
 end

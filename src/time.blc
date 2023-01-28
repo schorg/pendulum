@@ -1,8 +1,8 @@
 module exposes 
     MSEC, SEC, MIN, HOUR, DAY,
     cycleTimeMsec, cycleTimeSec,
-    TurnOnWithDelay, TurnOffWithDelay
-
+    TurnOnWithDelay, TurnOffWithDelay,
+    Await
 
 const MSEC: nat32 = 1
 const SEC = 1000 * MSEC
@@ -49,4 +49,14 @@ activity TurnOffWithDelay(inSig: bool, delay: nat32)(outSig: bool)
         prevSig = inSig
         await true
     end
+end
+
+
+activity Await(time: nat32)
+    var elapsedTime = 0 * MSEC
+    let duration = time
+    repeat
+        await true
+        elapsedTime = elapsedTime + cycleTimeMsec
+    until elapsedTime >= duration end
 end
