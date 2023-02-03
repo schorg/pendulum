@@ -1,0 +1,10 @@
+
+param x: int32 = 42
+
+param y: int32 = x * 2
+
+@[EntryPoint]
+activity Test() returns int32
+    await true
+    return y
+end

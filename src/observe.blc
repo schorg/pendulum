@@ -1,0 +1,18 @@
+import flow "flow"
+import params "params"
+import ui "ui"
+
+module exposes Moving, Balancing
+
+activity Moving (atPosition: bool) (move: ui.MoveStatus)        
+    repeat
+        move.atPosition = atPosition
+        await true
+    end
+end
+
+activity Balancing ()(autorun: ui.AutorunStatus)
+    repeat
+        await true
+    end
+end

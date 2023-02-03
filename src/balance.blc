@@ -24,7 +24,7 @@ function calculateForce (tune: params.Balance,
 end
 
 activity LqrSim (tune: params.Balance, x_setpoint: float64, sensors: flow.Sensing)
-                (motion: ui.MotionStatus, actuators: flow.Actuation)
+                (motion: ui.AutorunStatus, actuators: flow.Actuation)
     actuators.v_setpoint = 0.0
     repeat
         let f_setpoint = calculateForce(tune, x_setpoint, sensors)
