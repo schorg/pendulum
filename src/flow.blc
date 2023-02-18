@@ -1,15 +1,17 @@
 module exposes Sensing, Actuation
 
 struct Sensing
+    let pendulumId: nat32
     var x_actual: float64
     var v_actual: float64
     var theta_actual: float64
     var theta_d_actual: float64
     var is_theta_180: bool
     var is_theta_d_0: bool
-    var machineEnabled: bool
+    var pendulumEnabled: bool
 end
 
 struct Actuation
+    let pendulumId: nat32
     var v_setpoint: float64
 end

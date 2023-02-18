@@ -1,10 +1,11 @@
 module exposes 
     MachineStatus,       
-    EnableEvent, PendulumStatus, 
-    AutorunEvent, MoveEvent, 
-    MoveStatus, ObserveMove,
-    AutorunStatus
-
+    EnableEvent,  
+    AutorunEvent, 
+    MoveEvent,
+    PendulumStatus, initializePendulumStatus, 
+    MoveStatus, initializeMoveStatus, ObserveMove,
+    AutorunStatus, initializeAutorunStatus
 
 // These use the same names as the pendulum UI
 // The order is identical to the C definition, which allows for a cast
@@ -15,6 +16,7 @@ struct MachineStatus
     var control: bool
 end
 
+
 struct EnableEvent
     var on: bool
     var present: bool
@@ -24,6 +26,12 @@ struct PendulumStatus
     var driveEnabled: bool
     var driveError: bool
 end
+
+function initializePendulumStatus()(ps: PendulumStatus)
+    ps.driveEnabled = false
+    ps.driveError = false
+end
+
 
 struct AutorunEvent
     var on: bool
@@ -38,6 +46,15 @@ struct AutorunStatus
     var balanceFailed: bool 
 end
 
+
+function initializeAutorunStatus()(ars: AutorunStatus)
+    ars.autoStarted = false
+    ars.pendulumOk = false
+    ars.standupReady = false
+    ars.standupFailed = false
+    ars.balanceFailed = false
+end
+
 struct MoveEvent
     var x_setpoint: float64
     var present: bool
@@ -46,7 +63,13 @@ end
 
 /* Todo: Integrate this into UI and ports */
 struct MoveStatus
+    var started: bool
     var atPosition: bool
+end
+
+function initializeMoveStatus()(ms: MoveStatus)
+    ms.started = false
+    ms.atPosition = false
 end
 
 activity ObserveMove (atPosition: bool) (move: MoveStatus)        

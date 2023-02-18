@@ -60,22 +60,25 @@ activity Control (tune: params.Control,
                   autorun: ui.AutorunStatus, 
                   actuators: flow.Actuation)
     repeat
-        if not sensors.machineEnabled then
-            await sensors.machineEnabled
+        if not sensors.pendulumEnabled then
+            await sensors.pendulumEnabled
         end
         cobegin weak
             repeat
                 var x_setpoint = sensors.x_actual
                 when runAuto.present and runAuto.on abort
-                    run Moving(tune.position, tune.manualLimit, moveManual, sensors)(move, x_setpoint, actuators)
+                    run Moving(tune.position, tune.manualLimit, moveManual, sensors)
+                              (move, x_setpoint, actuators)
                 end
                 when runAuto.present and not runAuto.on abort
-                    run SwingingUp(tune.position, tune.standupLimit, tune.moves, sensors)(autorun, x_setpoint, actuators)
-                    run Balancing(tune.balance, moveManual, sensors)(autorun, x_setpoint, actuators)
+                    run SwingingUp(tune.position, tune.standupLimit, tune.moves, sensors)       
+                                  (autorun, x_setpoint, actuators)
+                    run Balancing(tune.balance, moveManual, sensors)
+                                 (autorun, x_setpoint, actuators)
                 end
             end
         with
-            await not sensors.machineEnabled 
+            await not sensors.pendulumEnabled 
         end
     end
 end

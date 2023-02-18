@@ -1,6 +1,10 @@
 module exposes
+    PendulumOne, PendulumTwo,
     MachineInput, MachineOutput,
     DriveInput, DriveOutput
+
+const PendulumOne: nat32 = 0;
+const PendulumTwo: nat32 = 1;
 
 struct MachineInput
     var fuse1ok: bool
@@ -18,12 +22,14 @@ struct MachineOutput
 end
 
 struct DriveInput
+    let pendulumId: nat32
     var analog: int16
     var status: bits16
     var position: int32
 end
 
 struct DriveOutput
+    let pendulumId: nat32
     var control: bits16
     var v_setpoint: int32
 end
