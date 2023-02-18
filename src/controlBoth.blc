@@ -3,6 +3,7 @@ import flow "flow"
 import ui "ui"
 import control "control" exposes Control
 
+
 @[EntryPoint]
 activity ControlBoth(placeP1: ui.MoveEvent, autorunP1: ui.AutorunEvent, sensorsP1: flow.Sensing,
                      placeP2: ui.MoveEvent, autorunP2: ui.AutorunEvent, sensorsP2: flow.Sensing)
