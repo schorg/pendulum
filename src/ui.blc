@@ -13,7 +13,10 @@ module exposes
 struct MachineStatus
     var emergencyStop: bool
     var doorOpen: bool
-    var control: bool
+    var controlOn: bool
+    var _prevEmergencyStop: bool
+    var _prevDoorOpen: bool
+    var _prevControlOn: bool
 end
 
 
@@ -25,6 +28,8 @@ end
 struct PendulumStatus
     var driveEnabled: bool
     var driveError: bool
+    var _prevDriveEnabled: bool
+    var _prevDriveError: bool    
 end
 
 function initializePendulumStatus()(ps: PendulumStatus)
@@ -44,6 +49,11 @@ struct AutorunStatus
     var standupReady: bool     
     var standupFailed: bool 
     var balanceFailed: bool 
+    var _prevAutoStarted: bool  
+    var _prevPendulumOk: bool   
+    var _prevStandupReady: bool 
+    var _prevStandupFailed: bool
+    var _prevBalanceFailed: bool
 end
 
 
@@ -65,6 +75,8 @@ end
 struct MoveStatus
     var started: bool
     var atPosition: bool
+    var _prevStarted: bool
+    var _prevAtPosition: bool
 end
 
 function initializeMoveStatus()(ms: MoveStatus)
